@@ -1,3 +1,6 @@
+/*3380687868
+1603017308
+*/
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -33,26 +36,93 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json());
 
-app.use("/api/recipes", (req, res, next) => {
-  const recipe = [
+app.post("/api/recipes", (req, res, next) => {
+  const recipe = new Recipe({
+    title: req.body.title,
+    ingredients: req.body.ingredients,
+    instructions: req.body.instructions,
+    difficulty: req.body.difficulty,
+    time: req.body.time
+  });
+  recipe
+    .save()
+    .then(() => {
+      res.status(201).json({
+        message: "Post Saved Successfully!"
+      });
+    })
+    .catch(error => {
+      res.status(400).json({
+        error: error
+      });
+    });
+});
+
+app.get("/api/recipes/:id", (req, res, next) => {
+  Recipe.findOne({
+    _id: req.params.id
+  })
+    .then(recipe => {
+      res.status(200).json(recipe);
+    })
+    .catch(error => {
+      res.status(404).json({
+        error: error
+      });
+    });
+});
+
+app.put("/api/recipes/:id", (req, res, next) => {
+  const recipe = new Recipe({
+    title: req.body.title,
+    ingredients: req.body.ingredients,
+    instructions: req.body.instructions,
+    difficulty: req.body.difficulty,
+    time: req.body.time,
+    _id: req.params.id
+  });
+  Recipe.updateOne(
     {
-      title: "string",
-      ingredients: ["string", "string2"],
-      instructions: "Here is a list of of what to do",
-      difficulty: 4,
-      time: 45,
-      _id: "hhchh3"
+      _id: req.params.id
     },
-    {
-      title: "string1",
-      ingredients: ["string3", "string7"],
-      instructions: "Here is a list of of what to do in the place",
-      difficulty: 5,
-      time: 35,
-      _id: "hhc3"
-    }
-  ];
-  res.status(200).json(recipe);
+    recipe
+  )
+    .then(() => {
+      res.status(201).json({
+        message: "Successfully Updated!!"
+      });
+    })
+    .catch(error => {
+      res.status(400).json({
+        error: error
+      });
+    });
+});
+
+app.delete("/api/recipes/:id", (req, res, next) => {
+  Recipe.deleteOne({ _id: req.params.id })
+    .then(() => {
+      res.status(200).json({
+        message: "Deleted!"
+      });
+    })
+    .catch(error => {
+      res.status(400).json({
+        error: error
+      });
+    });
+});
+
+app.use("/api/recipes", (req, res, next) => {
+  Recipe.find()
+    .then(recipes => {
+      res.status(200).json(recipes);
+    })
+    .catch(error => {
+      res.status(400).json({
+        error: error
+      });
+    });
 });
 
 module.exports = app;
